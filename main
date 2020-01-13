@@ -1,0 +1,130 @@
+#include <iostream>
+#include <vector>
+#include <stdlib.h>
+#include <time.h>
+using namespace std;
+struct Player{
+    string name;
+    int stock;
+    int status;//1 is in for the next round and 0 is out for the next round
+    int retire;//1 is our of the game and 0 is keep playing
+    int betAmount;//how much they bet
+    int betNum;//to wish number they bet
+    int betColour;//0 is evens&Red, 1 is odds&Black
+};
+int main()
+{
+    bool game{true};
+    int colORnum;
+    srand (time(NULL));
+    int numWin;
+    int bankStock{0};
+    int losingPlayers{0};
+    vector<Player*>RoulettePlayers;
+    Player* p01= new Player{"Vladimir",10,0,0,0,0,0};
+    Player* p02= new Player{"Diaghilev",10,0,0,0,0,0};
+    Player* p03= new Player{"Katerina",10,0,0,0,0,0};
+    Player* p04= new Player{"Fadeyka",10,0,0,0,0,0};
+    RoulettePlayers.push_back(p01);
+    RoulettePlayers.push_back(p02);
+    RoulettePlayers.push_back(p03);
+    RoulettePlayers.push_back(p04);
+    while(game){
+        cout<<"\n---Welcome to TheChispitasRoulette. Wanna play, my fellow Comrades? Type 1 to Start or 0 to Exit\n\t>>";
+        cin>>game;
+        while(losingPlayers<RoulettePlayers.size() && game){
+            cout<<"Another round will be, be ready!\n";
+            for(Player* player :RoulettePlayers){//check if player keeps in
+                if(player->status==0 && player->retire==0){
+                    cout<<"Are you in, Comrade "<< player->name<<"? Type 1 if Yes, type 0 to back off, coward.\n\t>>";
+                    cin>>player->status;
+                    while(player->status!=0 && player->status!=1){
+                        cout<<"Hey, care my friend! Type 1 of 0\n\t>>";
+                        cin>>player->status;
+                    }
+                    if(player->status==0){
+                        cout<<"Stepping up and leaving? Type 1 if wanna leave or Type 0 if you just pass\n\t>>";
+                        cin>>player->retire;
+                        while(player->retire!=0 && player->retire!=1){
+                            cout<<"Yo, care your fingers! Type 1 of 0\n\t>>";
+                            cin>>player->retire;
+                        }
+                    } else {
+                        cout<<"For how much would you bet? Type your number\n\t>>";//amount to bet
+                        cin>>player->betAmount;
+                        while(player->betAmount>player->stock || player->betAmount<1){
+                            cout<<"You bastard liar! You can't bet that!! Think again\n\t>>";
+                            cin>>player->betAmount;
+                        }
+                        player->stock=(player->stock)-player->betAmount;
+                        cout<<"Your bet, my fellow Comrade? Colours(type 0) or Numbers(type 1)?\n\t>>";//what they bet
+                        cin>>colORnum;
+                        while(colORnum!=0 && colORnum!=1){
+                            cout<<"You cringey western! Type 1 of 0\n\t>>";
+                            cin>>colORnum;
+                        }
+                        if(colORnum==0){//bet to Colours
+                            cout<<"To Reds(type 0) or Blacks(type 1)?\n\t>>";
+                            cin>>player->betColour;
+                            while(player->betColour!=0 && player->betColour!=1){
+                                cout<<"Hey, you filthy capitalist pig! Type 1 of 0.\n\t>>";
+                                cin>>player->betColour;
+                            }
+                        } else {//bet to Numbers
+                            cout<<"You feelin' lucky?? To which number, my friend? Type from 1 to 36.\n\t>>";
+                            cin>>player->betNum;
+                            while(player->betNum>36 || player->betNum<1){
+                                cout<<"You dumb fat fascist western spy!! Think again.\n\t>>";
+                                cin>>player->betNum;
+                            }
+                        }//all questions asked
+                    }
+                }
+            }
+            cout<<"\n\n---Spinning...---";
+            numWin= rand() % 36;
+            cout<<"\nAnd the winning number is "<<numWin<<"!!!!\n";
+            if(numWin==0){//bankWins
+                cout<<"Unlucky for you, but lucky for The Motherland! The bank wins.\n";
+                for(Player*i :RoulettePlayers){
+                    bankStock=bankStock+i->betAmount;
+                    i->betAmount=0;
+                }
+            } else {
+                for(Player* i :RoulettePlayers){
+                    if(numWin==(i->betNum)){//check if player won
+                        i->betAmount=35*i->betAmount;
+                        i->stock=i->stock+i->betAmount;
+                        i->betAmount=0;
+                    }else if(numWin%2==0){//numWin is even&RED
+                        if(i->betColour==0){//playerbetthat?
+                            i->betAmount=2*i->betAmount;
+                            i->stock=i->stock+i->betAmount;
+                        } else bankStock=bankStock+i->betAmount;
+                    } else if(numWin%2==0) {//numWin is odd&black
+                        if(i->betColour==1){//playerbetthat?
+                            i->betAmount=2*i->betAmount;
+                            i->stock=i->stock+i->betAmount;
+                        } else bankStock=bankStock+i->betAmount;
+                    }
+                    i->betAmount=0;//resseting for next round
+                }
+            }
+            cout<<"\n---Here's how the money goes this round:\n";
+            for(auto i:RoulettePlayers){
+                if(i->status==1) cout<<i->name<<":\t"<<i->stock<<" euros\n";
+                if(i->stock==0)i->retire=1;
+                i->status=0;
+            }
+            losingPlayers=0;
+            for(auto i:RoulettePlayers){
+                if(i->retire==1) losingPlayers++;
+            }
+        }
+        cout<<"\n\n---Thanks for playing, see you with your next salary from Mother Russia ;)\n";
+        cout<<"\n---Here's how the money goes at the very end: \n";
+        for(auto i:RoulettePlayers) cout<<i->name<<":\t"<<i->stock<<" euros\n";
+        cout<<"And the coffers of The Motherland earns:\t"<<bankStock<<" euros\n\n---See you soon, Comrades!!\n";
+    }
+    return 0;
+}//https://www.youtube.com/watch?v=Kl3ht1qyDU8
